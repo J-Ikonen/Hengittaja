@@ -25,6 +25,9 @@ void changeSettings(Settings *set, int i, int newval){ //Must be given the addre
 		case 4:
 			set->pwm_max_fan = newval;
 			break;
+		case 5:
+			settings2Mem( *set)//vai set?
+			break;
 		default:
 			break;
 	}
