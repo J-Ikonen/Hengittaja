@@ -72,6 +72,7 @@ unsigned char uart_getc() {
 
 	while(rx_flag == 0); 				// Wait until char exists to get
 
+
 	c = rx_fifo[rx_fifo_ptA];			// Get char from fifo buffer
 	rx_fifo_ptA++;
 
@@ -187,25 +188,25 @@ __interrupt void USCI0RX_ISR(void) {
 
 
 /*
-┌──────────────────────────────────────────────────────────────────────────────────────┐
-│                           TERMS OF USE: MIT License                                  │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│Permission is hereby granted, free of charge, to any person obtaining a copy of this  │
-│software and associated documentation files (the "Software"), to deal in the Software │
-│without restriction, including without limitation the rights to use, copy, modify,    │
-│merge, publish, distribute, sublicense, and/or sell copies of the Software, and to    │
-│permit persons to whom the Software is furnished to do so, subject to the following   │
-│conditions:                                                                           │
-│                                                                                      │
-│The above copyright notice and this permission notice shall be included in all copies │
-│or substantial portions of the Software.                                              │
-│                                                                                      │
-│THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,   │
-│INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A         │
-│PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT    │
-│HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION     │
-│OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        │
-│SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                │
-└──────────────────────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚                           TERMS OF USE: MIT License                                  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚Permission is hereby granted, free of charge, to any person obtaining a copy of this  â”‚
+â”‚software and associated documentation files (the "Software"), to deal in the Software â”‚
+â”‚without restriction, including without limitation the rights to use, copy, modify,    â”‚
+â”‚merge, publish, distribute, sublicense, and/or sell copies of the Software, and to    â”‚
+â”‚permit persons to whom the Software is furnished to do so, subject to the following   â”‚
+â”‚conditions:                                                                           â”‚
+â”‚                                                                                      â”‚
+â”‚The above copyright notice and this permission notice shall be included in all copies â”‚
+â”‚or substantial portions of the Software.                                              â”‚
+â”‚                                                                                      â”‚
+â”‚THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,   â”‚
+â”‚INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A         â”‚
+â”‚PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT    â”‚
+â”‚HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION     â”‚
+â”‚OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        â”‚
+â”‚SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 */
 

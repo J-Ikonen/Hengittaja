@@ -1,7 +1,9 @@
 #include <msp430g2553.h>
 #include <inttypes.h>
-#include "settings.h"
 #include <string.h>
+#include <stdlib.h>
+
+#include "settings.h"
 #include "uart.h"
 #include "pwm.h"
 
@@ -22,7 +24,7 @@ void delay_cycles(volatile uint32_t i);
 
 
 /* GLOBAL VARIABLES */
-char rx_string[INPUT_SIZE + 1];
+char rx_string[INPUT_SIZE];
 
 
 int main(void) {
@@ -54,6 +56,7 @@ int main(void) {
 											What to do: 1: change led cycletime, 2: change fan cycletime
 											3: change led pwm brightness, 4: fan pwm power
 											5: write current settings to flash memory
+											6: get settings from memory (discard current settings)
 																
 			Let's start parsing away!							*/
 			
@@ -71,7 +74,7 @@ int main(void) {
 					++separator;
 					int val = atoi(separator);
 					
-					changeSettings(set, memtask, val); // Call changeSettings to change settings or write them2flash
+					changeSettings(&set, memtask, val); // Call changeSettings to change settings or write them2flash
 					
 				}
 				// Find the next command in input string
