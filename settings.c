@@ -1,5 +1,5 @@
 /* 	FLASH MEMORY SPACES FOR SAVED SETTINGS	*/	// SegB starts at 0x1080, lenght 0x0040, end 0x10BF (?)
-#include <intyppes.h>
+#include <inttypes.h>
 #include <msp430g2553.h>
 #include "settings.h"
 
@@ -34,7 +34,7 @@ void settings2Mem(Settings *set) { //Must be given the address of settings i.e. 
 	FCTL2 = FWKEY + FSSEL_1 + FN1; 	// use MCLK/3
 	FCTL1 = FWKEY + ERASE; 			// set to erase flash segment
 	FCTL3 = FWKEY;					// set LOCK to 0
-	INTERRUPT_CYCLES_MEM = 0x00;		// dummy write to iCyc to init erasing seg
+	MEM_LED_CYC = 0x00;		// dummy write to iCyc to init erasing seg
 	while(FCTL3 & BUSY);
 	FCTL1 = FWKEY + WRT;			// Set write bit
 
@@ -55,11 +55,11 @@ void settings2Mem(Settings *set) { //Must be given the address of settings i.e. 
 	FCTL3 = FWKEY + LOCK;			// set lock bit
 }
 
-void mem2settings(Settings *set){
+void mem2Settings(Settings *set){
 	set->cycle_time_led = MEM_LED_CYC;
-	set->max_pwm_led = MEM_LED_PWM;
+	set->pwm_max_led = MEM_LED_PWM;
 	set->cycle_time_fan = MEM_FAN_CYC;
-	set->max_pwm_fan = MEM_FAN_PWM;
+	set->pwm_max_fan = MEM_FAN_PWM;
 }
 
 
