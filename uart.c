@@ -100,6 +100,7 @@ void uart_gets(char* array, int length) {
 		array[i] = uart_getc();
 
 		if(array[i] == '\r') {			// Fill rest of lenght with \0
+			array[i] = uart_getc();		// Since terminal adds \r\n read last char and overwrite it with \0
 			for( ; i < length; i++) {
 				array[i] = '\0';
 			}

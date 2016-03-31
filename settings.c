@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <msp430g2553.h>
 #include "settings.h"
+#include "uart.h"
 
 
 #define BSTARTADR				(int *) 0x1080
@@ -14,26 +15,40 @@
 void changeSettings(Settings *set, int i, int newval){ //Must be given the address of settings i.e. &Settings1
 	switch (i){
 		case 1:
-			set->cycle_time_led = newval;
+			set->cycle_time_led = newval * 100;
+			uart_puts((char *)"LED cycle time set\r\n");
 			break;
 		case 2:
 			set->cycle_time_fan = newval;
+			uart_puts((char *)"Fan cycle time set\r\n");
 			break;
 		case 3:
 			set->pwm_max_led = newval;
+			//set_pwm_dc(set->pwm_max_led, 1);
+
+			uart_puts((char *)"LED max PWM value set\r\n");
 			break;
 		case 4:
 			set->pwm_max_fan = newval;
+			uart_puts((char *)"Fan max PWM value set\r\n");
 			break;
 		case 5:
 			settings2Mem(set);
+			uart_puts((char *)"Settings saved\r\n");
 			break;
 		case 6:
 			mem2Settings(set);
+			uart_puts((char *)"Fetced saved settings\r\n");
 			break;
 		default:
 			break;
 	}
+}
+void settingsDefault(Settings *set) {
+	set->cycle_time_led = 50;
+	set->pwm_max_led = 100;
+	set->cycle_time_fan = 100;
+	set->pwm_max_fan = 50;
 }
 
 void settings2Mem(Settings *set) { //Must be given the address of settings i.e. &Settings1

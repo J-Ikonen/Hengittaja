@@ -12,6 +12,12 @@
 #include <msp430g2553.h>
 #include "settings.h"
 
+typedef struct run_values {
+	volatile uint16_t inter_cycles;
+	volatile uint8_t pwm_dc_led;
+	volatile uint8_t pwm_dc_fan;
+} RunValues;
+
 typedef struct settings {
 	uint16_t cycle_time_led;
 	uint16_t cycle_time_fan;
@@ -27,6 +33,6 @@ void settings2Mem(Settings *set);
 
 void mem2Settings(Settings *set);
 
-
+void settingsDefault(Settings *set);
 
 #endif /* SETTINGS_H_ */

@@ -21,29 +21,38 @@
 /* FUNCTION DECLARATIONS */
 void board_setup(void);
 void delay_cycles(volatile uint32_t i);
-
+int dir = 1; // breathing counter direction
 
 /* GLOBAL VARIABLES */
 char rx_string[INPUT_SIZE];
-
+volatile uint8_t intcyc = 0;
+RunValues rVal;
+Settings set;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 	BCSCTL1 = CALBC1_8MHZ; 				//Set DCO to 8Mhz
     DCOCTL = CALDCO_8MHZ; 				//Set DCO to 8Mhz
 
+
+
     board_setup();
     uart_init();
     TA_init();
     __enable_interrupt();
+
+    uart_puts((char *)"Hello world!\r\n");
 	
-    Settings set;
-	mem2Settings(&set);
+    // Init settings and run values
+    settingsDefault(&set);
+    rVal.inter_cycles = 0;
+    rVal.pwm_dc_led = 0;
+    rVal.pwm_dc_fan = 0;
 
 	
     while(1) {
 		if(rx_flag == 1) {
-    		uart_putc(uart_getc());			// getc fixes one line lag on reading commands somehow
+    		//uart_putc(uart_getc());			// getc fixes one line lag on reading commands somehow
     		memset(rx_string, 0, INPUT_SIZE);		// getting empty line on console means faulty command
     		uart_gets(rx_string, INPUT_SIZE);		// se on ominaisuus ei bugi
 			/*We have the data! 
@@ -75,7 +84,7 @@ int main(void) {
 					int val = atoi(separator);
 					
 					changeSettings(&set, memtask, val); // Call changeSettings to change settings or write them2flash
-					
+
 				}
 				// Find the next command in input string
 				command = strtok(0, "&");
@@ -102,3 +111,36 @@ void delay_cycles(volatile uint32_t i) {
 	do i--;
 	while(i != 0);
 }
+
+/* INTERRUPT SERVICE ROUTINES */		// Should try to make based on non pwm timer
+#pragma vector = TIMER0_A1_VECTOR
+__interrupt void TA0_ISR(void) {
+	if(rVal.inter_cycles == (uint32_t)(set.cycle_time_led)) {	// Count to cycle time. Scale for cycles at 1kHz
+		rVal.inter_cycles = 0;
+	}
+	/* Every 10 interrupts increase pwm by 10 and set new pwm dc value*/
+	if(intcyc == 10) {
+		if(rVal.pwm_dc_led >= 100) {
+			dir = -1;
+		} else if(rVal.pwm_dc_led <= 0) {
+			dir = 1;
+		}
+		rVal.pwm_dc_led += (dir * intcyc);
+		set_pwm_dc(&rVal, 1);
+		intcyc = 0;
+
+	}
+	intcyc++;
+	rVal.inter_cycles++;
+}
+
+
+
+
+
+
+
+
+
+
+

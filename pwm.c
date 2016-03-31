@@ -6,6 +6,7 @@
  *
  *      Pins   	1.5 Timer0_A compare Out0	TA0.0
  *      		1.6 Timer0_A compare Out1	TA0.1
+ *      									TA0.2 ????
  *      		2.0 Timer1_A compare Out0	TA1.0	Timer1_A3.TA0, P2SEL = 1, P2SEL2 = 0
  *      		2.1 /2.2					TA1.1	Timer1_A3.TA1 	P2DIR = 1, P2SEL = 1, P2SEL2 = 0
  *      		2.3 / 2.4					TA1.2
@@ -17,23 +18,28 @@
  *      		TACCR0 for TACCR0 CCIFG
  *      		TAIV for all other CCIFG flags and TAIFG
  *
+ *      		Up mode TAIFG flag is set when timer counts from TACCR0 to zero
+ *
  */
 
 
 #include <msp430g2553.h>
+#include "settings.h"
 
 #define PWMFRQ 8000		// PWM frequency - DC0/PWMFRQ - 8Mhz/1000 = 8kHz
 
 
 void TA_init(void) {
 	TACCR0 = PWMFRQ;
-	TACCR1 = PWMFRQ/2;
+	TACCR1 = (PWMFRQ/100) * 20 ;
 	//TACCR2 = PWMFRQ/2;
 
-	TACTL = TASSEL_2 + ID_0 + MC_1;  // SMCLK, div 1, Up Mode  (+ TAIE)
+	TACTL |= TASSEL_2 + ID_0 + MC_1 + TAIE;  // SMCLK, div 1, Up Mode  (+ TAIE)
 
-	TACCTL1 = OUTMOD_7;		// Reset at TACCR1
+	TACCTL1 |= OUTMOD_7;		// Reset at TACCR1
 	//TACCTL2 = OUTMOD_7;		// Reset at TACCR2
+
+
 
 }
 
@@ -42,12 +48,24 @@ void TA_init(void) {
  * INPUT: Duty cycle dc, i pwm 1 or 2
  * RETURN: None
  */
-void set_pwm_dc(int dc, int i) {
+void set_pwm_dc(RunValues *rv, int i) {
 	if(i == 1) {
-		TACCR1 = (PWMFRQ / 100) * dc;
+		TACCR1 = (PWMFRQ / 100) * rv->pwm_dc_led;
 	} else if(i == 2) {
-		TACCR2 = (PWMFRQ / 100) * dc;
+		TACCR2 = (PWMFRQ / 100) * rv->pwm_dc_fan;
 	} else {
 
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+

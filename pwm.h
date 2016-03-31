@@ -9,6 +9,6 @@
 #define PWM_H_
 
 void TA_init(void);
-void set_pwm_dc(int dc, int i);
+void set_pwm_dc(RunValues *rv, int i);
 
 #endif /* PWM_H_ */
