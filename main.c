@@ -10,6 +10,17 @@
 
 /*
  * main.c
+ *
+ * Käyetetyt pinnit:
+ * P1.1 == RX   ---> TX HC-06
+ * P1.2 == TX   ---> RX HC-06
+ * P2.2 == PWM1 ---> LED
+ * P2.5 == PWM2 ---> FAN
+ *
+ *
+ * Korkein aika jolla pwm teho vielä vaihtuu saadaan yhtälöllä
+ * (max - min) * 80 / 10 = MaxAika,
+ * missä max ja min (%), MaxAika (s)
  */
  
 /* Readable pin defines and other constants */

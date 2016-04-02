@@ -32,8 +32,8 @@
 #include "pwm.h"
 #include "main.h"
 
-#define PWM1 BIT5	// Pin definitions for pwm signals
-#define PWM2 BIT2
+#define PWM2 BIT5	// Pin definitions for pwm signals
+#define PWM1 BIT2
 
 
 

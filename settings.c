@@ -126,6 +126,12 @@ void setHelpers(Settings *set) {
 	if(set->pwm_step_fan < 2 || set->pwm_step_led < 2) {
 		uart_puts((char *)"Arvot voivat aiheuttaa virheita tai epatarkkuuksia!!!\r\n");
 	}
+	if(set->pwm_step_fan == 0) {
+		uart_puts((char *)"Tuulettimen teho ei muutu!!!\r\n");
+	} else if(set->pwm_step_led == 0) {
+		uart_puts((char *)"Ledien teho ei muutu!!!\r\n");
+	}
+
 }
 
 
