@@ -21,9 +21,10 @@
 /* FUNCTION DECLARATIONS */
 void board_setup(void);
 void delay_cycles(volatile uint32_t i);
+void get_bt_data(void);
 
 /* GLOBAL VARIABLES */
-char rx_string[INPUT_SIZE];
+
 RunValues rVal;
 Settings set;
 
@@ -38,8 +39,7 @@ int main(void) {
     uart_init();
 
     settingsDefault(&set);		// Set values used by timer before timer init
-    init_rv(&rv, &set);
-    TA_init();
+    TA_init(&rVal, &set);
     __enable_interrupt();
 
     uart_puts((char *)"Hello world!\r\n");
@@ -49,46 +49,9 @@ int main(void) {
 
 	
     while(1) {
-		if(rx_flag == 1) {
-    		//uart_putc(uart_getc());			// getc fixes one line lag on reading commands somehow
-    		memset(rx_string, 0, INPUT_SIZE);		// getting empty line on console means faulty command
-    		uart_gets(rx_string, INPUT_SIZE);		// se on ominaisuus ei bugi
-			/*We have the data! 
-			Format should be the following: 1:120&2:100&3:80&5:00
-											^ ^
-											| |																
-											| Value: for cycletimes: 0-65 (0.1s) eg. 10s = 100
-											|		 for pwm: 0-99 (%) , when writing value doesnt do anything
-											|
-											What to do: 1: change led cycletime, 2: change fan cycletime
-											3: change led pwm brightness, 4: fan pwm power
-											5: write current settings to flash memory
-											6: get settings from memory (discard current settings)
-																
-			Let's start parsing away!							*/
-			
-			/* Following code for using data strings without leaving memory full*/
-			char* command = strtok(rx_string, "&");
-			while (command != 0)
-			{
-				// Split the command in two values
-				char* separator = strchr(command, ':');
-				if (separator != 0)
-				{
-					// Actually split the string in 2: replace ':' with 0
-					*separator = 0;
-					int memtask = atoi(command);
-					++separator;
-					int val = atoi(separator);
-					
-					changeSettings(&set, memtask, val); // Call changeSettings to change settings or write them2flash
-
-				}
-				// Find the next command in input string
-				command = strtok(0, "&");
-			}
-    	}
-		//____MISSING WHAT TO DO WITH SETTINGS
+    	if(rx_flag == 1) {
+			get_bt_data();
+		}
     }
 	
 	return 0;
@@ -96,13 +59,8 @@ int main(void) {
 
 /* Pin and other setup at start _____NOT REVISED____ */
 void board_setup(void) {
-
 	P1OUT = 0;
 	P1DIR |= RLED + GLED;
-
-
-
-
 }
 
 /* Delay i cycles */
@@ -111,13 +69,56 @@ void delay_cycles(volatile uint32_t i) {
 	while(i != 0);
 }
 
-/* INTERRUPT SERVICE ROUTINES 		// Should try to make based on non pwm timer
-#pragma vector = TIMER1_A1_VECTOR
+void get_bt_data(void) {
+	char rx_string[INPUT_SIZE];
+	memset(rx_string, 0, INPUT_SIZE);		// getting empty line on console means faulty command
+	uart_gets(rx_string, INPUT_SIZE);		// se on ominaisuus ei bugi
+	/*We have the data!
+	Format should be the following: 1:120&2:100&3:80&5:00
+									^ ^
+									| |
+									| Value: for cycletimes: 0-65 (0.1s) eg. 10s = 100
+									|		 for pwm: 0-99 (%) , when writing value doesnt do anything
+									|
+									What to do: 1: change led cycletime, 2: change fan cycletime
+									3: change led pwm brightness, 4: fan pwm power
+									5: write current settings to flash memory
+									6: get settings from memory (discard current settings)
+
+	Let's start parsing away!							*/
+
+	/* Following code for using data strings without leaving memory full*/
+	char* command = strtok(rx_string, "&");
+	while (command != 0)
+	{
+		// Split the command in two values
+		char* separator = strchr(command, ':');
+		if (separator != 0)
+		{
+			// Actually split the string in 2: replace ':' with 0
+			*separator = 0;
+			int memtask = atoi(command);
+			++separator;
+			int val = atoi(separator);
+
+			changeSettings(&set, memtask, val); // Call changeSettings to change settings or write them2flash
+
+		}
+		// Find the next command in input string
+		command = strtok(0, "&");
+	}
+}
+
+/* INTERRUPT SERVICE ROUTINES 	*/
+#pragma vector = TIMER0_A1_VECTOR
 __interrupt void TA0_ISR(void) {
+	if(rx_flag == 1) {
+		get_bt_data();
+	} else
+		pwm_cycle_isrf(&rVal, &set);
 
 }
 
-*/
 
 
 

@@ -43,10 +43,11 @@ void changeSettings(Settings *set, int i, int newval){ //Must be given the addre
 	}
 }
 void settingsDefault(Settings *set) {
-	set->cycle_time_led = 200;
-	set->pwm_max_led = 100;
-	set->cycle_time_fan = 200;
-	set->pwm_max_fan = 100;
+	set->cycle_time_led = 50000;
+	set->pwm_max_led = 8000;
+	set->cycle_time_fan = 50000;
+	set->pwm_max_fan = 8000;
+	setHelpers(set);
 }
 
 void settings2Mem(Settings *set) { //Must be given the address of settings i.e. &Settings1
@@ -92,19 +93,19 @@ uint16_t scaleValues(uint16_t value, int i) {
 	switch(i)  {
 		case 1:
 			return (TIMER0_FRQ / TIMER0_MAX_COUNT) * value / 10;
-			break;
+
 		case 2:
 			return (TIMER0_FRQ / TIMER0_MAX_COUNT) * value / 10;
-			break;
+
 		case 3:
 			return value * TIMER1_MAX_COUNT / 100;
-			break;
+
 		case 4:
 			return value * TIMER1_MAX_COUNT / 100;
-			break;
+
 		default:
 			return value;
-			break;
+
 	}
 }
 

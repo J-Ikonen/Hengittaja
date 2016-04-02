@@ -21,7 +21,7 @@ typedef struct run_values {
 	volatile uint16_t inter_cycles;
 	volatile uint16_t pwm_dc_led;
 	volatile uint16_t pwm_dc_fan;
-	volatile char dir;
+	volatile int dir;
 	volatile int help_count;
 
 } RunValues;
@@ -31,10 +31,10 @@ typedef struct run_values {
  * Initialize A timers 0 , 1 and
  *
  */
-void TA_init(void);
+void TA_init(RunValues *rv, Settings *set);
 void set_pwm_dc(RunValues *rv, int i);
 void reset_run_values(RunValues *rv);
-void pwm_cycle_isrf(RunValues *rv);
+void pwm_cycle_isrf(RunValues *rv,  Settings *set);
 uint16_t cycletime2counter(uint16_t value);
 void init_rv(RunValues *rv, Settings *set);
 
