@@ -10,9 +10,10 @@
 
 #define BSTARTADR				(int *) 0x1080
 #define MEM_CYC					*(uint16_t *) 0x1080		// 2 Byte address for values up to 65s
-#define MEM_LED_PWM				*(uint16_t *) 0x1082		// 2 Byte address for 0-100 PWM val (Might bug out!)
-#define MEM_FAN_PWM				*(uint16_t *) 0x1084		// ^^
-
+#define MEM_LED_MAX_PWM			*(uint16_t *) 0x1082		// 2 Byte address for 0-100 PWM val (Might bug out!)
+#define MEM_FAN_MAX_PWM			*(uint16_t *) 0x1084		// ^^
+#define MEM_LED_MIN_PWM			*(uint16_t *) 0x1086		// 2 Byte address for 0-100 PWM val (Might bug out!)
+#define MEM_FAN_MIN_PWM			*(uint16_t *) 0x1088
 
 /* Values for pwm and cycling, save in values usable by code
  * Used as maximum values

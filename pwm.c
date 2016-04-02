@@ -98,7 +98,7 @@ void reset_run_values(RunValues *rv) {
 
 void pwm_cycle_isrf(RunValues *rv, Settings *set) {
 	/* IF full cycle is done */
-	if(rv->inter_cycles == set->cycle_time) {
+	if(rv->inter_cycles >= set->cycle_time) {
 		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
 		if(rv->dir == 1) {
 			rv->pwm_dc_led = set->pwm_max_led;
@@ -106,8 +106,8 @@ void pwm_cycle_isrf(RunValues *rv, Settings *set) {
 			set_pwm_dc(rv);						// Set max values on run values and change direction
 			rv->dir = -1;
 		} else {
-			rv->pwm_dc_led = 0;
-			rv->pwm_dc_fan = 0;					// Set run values to zero and change direction
+			rv->pwm_dc_led = set->pwm_min_led;
+			rv->pwm_dc_fan = set->pwm_min_fan;					// Set run values to min and change direction
 			set_pwm_dc(rv);
 			rv->dir = 1;
 		}
@@ -115,7 +115,7 @@ void pwm_cycle_isrf(RunValues *rv, Settings *set) {
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
 	/* Every second interrupt change pwm power by step toward dir*/
-	} else if(rv->help_count == 1) {
+	} else if(rv->help_count >= 1) {
 
 		rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;
 		rv->pwm_dc_led += rv->dir * set->pwm_step_led;
