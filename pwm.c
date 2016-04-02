@@ -12,7 +12,7 @@
  *      		2.1 /2.2					TA1.1	Timer1_A3.TA1 	P2DIR = 1, P2SEL = 1, P2SEL2 = 0
  *      		2.3 / 2.4					TA1.2
  *
- *      		This uses pins 2.5 and 2.2 for PWM signals
+ *      		This uses pins 2.5 and 2.2 for PWM signals, 2.5 for fan 2.2 for led
  *
  *				Need to use Timer1_A for 2 differing pwm signals, and Timer0_A for timing cycles
  *

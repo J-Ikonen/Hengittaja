@@ -9,49 +9,75 @@
 
 
 void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be given the address of settings i.e. &Settings1
+	if(newval < 0) {
+		uart_puts((char *)"Neg arvoja ei hyvaksyta\r\n");
+	}
 	switch (i){
 		case 1:
+			//if(newval > 600) {
+			//	uart_puts((char *)"Yli minuutti??? ok\r\n");
+			//}
 			set->cycle_time = scaleValues(newval, 1);
-			uart_puts((char *)"Cycle time set\r\n");
+			uart_puts((char *)"Syklin aika ok\r\n");
 			break;
 		case 2:
-			set->pwm_max_led = scaleValues(newval, 2);
-			uart_puts((char *)"LED max PWM value set\r\n");
+			if(newval * 80 < set->pwm_min_led) {
+				uart_puts((char *)"Virhe - LED max < min\r\n");
+			} else {
+				set->pwm_max_led = scaleValues(newval, 2);
+				uart_puts((char *)"LED max arvo ok\r\n");
+			}
 			break;
 		case 3:
-			set->pwm_min_led = scaleValues(newval, 2);
-			uart_puts((char *)"LED min PWM value set\r\n");
+			if(newval * 80 > set->pwm_max_led) {
+				uart_puts((char *)"Virhe - LED max < min\r\n");
+			} else {
+				set->pwm_min_led = scaleValues(newval, 2);
+				uart_puts((char *)"LED min arvo ok\r\n");
+			}
 			break;
 		case 4:
-			set->pwm_max_fan = scaleValues(newval, 2);
-			uart_puts((char *)"Fan max PWM value set\r\n");
+			if(newval * 80 < set->pwm_min_fan) {
+				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
+			} else {
+				set->pwm_max_fan = scaleValues(newval, 2);
+				uart_puts((char *)"Tuuletin max arvo ok\r\n");
+			}
 			break;
 		case 5:
-			set->pwm_min_fan = scaleValues(newval, 2);
-			uart_puts((char *)"Fan min PWM value set\r\n");
+			if(newval * 80 > set->pwm_max_fan) {
+				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
+			} else {
+				set->pwm_min_fan = scaleValues(newval, 2);
+				uart_puts((char *)"Tuuletin min arvo ok\r\n");
+			}
 			break;
 		case 6:
 			settingsDefault(set);
+			uart_puts((char *)"Oletus asetukset asetettu\r\n");
 			break;
 		case 9:
-			settings2Mem(set);
-			uart_puts((char *)"Settings saved\r\n");
+			if(settings2Mem(set) == -1) {
+				uart_puts((char *)"Virhe asetusten tallennuksessa\r\n");
+			} else
+				uart_puts((char *)"Asetukset tallennettu\r\n");
 			break;
 		case 10:
 			mem2Settings(set);
-			uart_puts((char *)"Fetced saved settings\r\n");
+			uart_puts((char *)"Asetukset otettu käyttöön\r\n");
 			break;
 		default:
 			break;
 	}
-	if(i != 5) {
+
+	if(i != 9) {
 		setHelpers(set);
 		reset_run_values(rv); // Reset run values to restart cycle on changed settings
 	}
 
 }
 void settingsDefault(Settings *set) {
-	set->cycle_time = 200;
+	set->cycle_time = 100;
 	set->pwm_max_led = 8000;
 	set->pwm_max_fan = 8000;
 	set->pwm_min_led = 0;
@@ -59,7 +85,13 @@ void settingsDefault(Settings *set) {
 	setHelpers(set);
 }
 
-void settings2Mem(Settings *set) { //Must be given the address of settings i.e. &Settings1
+/* settings2Mem
+ * Saves settings to flash
+ * INPUT: Settings to be saved
+ * RETURN: 0 if saved correctly, -1 if not
+ */
+int settings2Mem(Settings *set) { //Must be given the address of settings i.e. &Settings1
+	int retVal = -1;
 	FCTL2 = FWKEY + FSSEL_1 + FN1; 	// use MCLK/3
 	FCTL1 = FWKEY + ERASE; 			// set to erase flash segment
 	FCTL3 = FWKEY;					// set LOCK to 0
@@ -69,21 +101,13 @@ void settings2Mem(Settings *set) { //Must be given the address of settings i.e. 
 
 	/*Ready to write!*/
 
-	while(MEM_CYC+MEM_LED_MAX_PWM+MEM_FAN_MAX_PWM+MEM_LED_MIN_PWM+MEM_FAN_MIN_PWM	 !=
-	set->cycle_time+set->pwm_max_led+set->pwm_max_fan){ //Write until we get it right
-		MEM_CYC = set->cycle_time;
-		while(FCTL3 & BUSY);
-		MEM_LED_MAX_PWM = set->pwm_max_led;
-		while(FCTL3 & BUSY);
-		MEM_FAN_MAX_PWM = set->pwm_max_fan;
-		while(FCTL3 & BUSY);
-		MEM_LED_MIN_PWM = set->pwm_min_led;
-		while(FCTL3 & BUSY);
-		MEM_FAN_MIN_PWM = set->pwm_min_fan;
-		while(FCTL3 & BUSY);
+	if(MEM_CYC+MEM_LED_MAX_PWM+MEM_FAN_MAX_PWM+MEM_LED_MIN_PWM+MEM_FAN_MIN_PWM	 ==
+	set->cycle_time+set->pwm_max_led+set->pwm_max_fan+set->pwm_min_fan+set->pwm_min_led){
+		retVal = 0;
 	}
 	FCTL1 = FWKEY;					// Clear write bit
 	FCTL3 = FWKEY + LOCK;			// set lock bit
+	return retVal;
 }
 
 void mem2Settings(Settings *set){
@@ -99,17 +123,19 @@ void mem2Settings(Settings *set){
 void setHelpers(Settings *set) {
 	set->pwm_step_led = (set->pwm_max_led - set->pwm_min_led)/ (set->cycle_time / 2);
 	set->pwm_step_fan = (set->pwm_max_fan - set->pwm_min_fan)/ (set->cycle_time / 2);
+	if(set->pwm_step_fan < 2 || set->pwm_step_led < 2) {
+		uart_puts((char *)"Arvot voivat aiheuttaa virheita tai epatarkkuuksia!!!\r\n");
+	}
 }
 
 
 uint16_t scaleValues(uint16_t value, int i) {
 	switch(i)  {
 		case 1:
-			return 20 * value / 10; 		// /10 to scale back to s from 0.1s
+			return 2 * value; 		// /10 to scale back to s from 0.1s
 
 		case 2:
-			return value * 8000 / 100;			// 0-100% power
-
+			return value * 80;			// 0-100% power
 
 		default:
 			break;
