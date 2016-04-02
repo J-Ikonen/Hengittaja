@@ -6,6 +6,7 @@
 #include "settings.h"
 #include "uart.h"
 #include "pwm.h"
+#include "main.h"
 
 /*
  * main.c
@@ -18,10 +19,7 @@
 #define TX		BIT2
 #define INPUT_SIZE 30
 
-/* FUNCTION DECLARATIONS */
-void board_setup(void);
-void delay_cycles(volatile uint32_t i);
-void get_bt_data(void);
+
 
 /* GLOBAL VARIABLES */
 
@@ -29,7 +27,7 @@ RunValues rVal;
 Settings set;
 
 int main(void) {
-    WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;			// Stop watchdog timer
 	BCSCTL1 = CALBC1_8MHZ; 				//Set DCO to 8Mhz
     DCOCTL = CALDCO_8MHZ; 				//Set DCO to 8Mhz
 
@@ -37,9 +35,9 @@ int main(void) {
 
     board_setup();
     uart_init();
-
+    reset_run_values(&rVal);
     settingsDefault(&set);		// Set values used by timer before timer init
-    TA_init(&rVal, &set);
+    TA_init();
     __enable_interrupt();
 
     uart_puts((char *)"Hello world!\r\n");
@@ -71,7 +69,7 @@ void delay_cycles(volatile uint32_t i) {
 
 void get_bt_data(void) {
 	char rx_string[INPUT_SIZE];
-	memset(rx_string, 0, INPUT_SIZE);		// getting empty line on console means faulty command
+	memset(rx_string, 0, INPUT_SIZE);
 	uart_gets(rx_string, INPUT_SIZE);		// se on ominaisuus ei bugi
 	/*We have the data!
 	Format should be the following: 1:120&2:100&3:80&5:00
@@ -101,12 +99,13 @@ void get_bt_data(void) {
 			++separator;
 			int val = atoi(separator);
 
-			changeSettings(&set, memtask, val); // Call changeSettings to change settings or write them2flash
+			changeSettings(&set, memtask, val, &rVal); // Call changeSettings to change settings or write them2flash
 
 		}
 		// Find the next command in input string
 		command = strtok(0, "&");
 	}
+
 }
 
 /* INTERRUPT SERVICE ROUTINES 	*/

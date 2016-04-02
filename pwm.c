@@ -26,12 +26,11 @@
  *      		Up mode TAIFG flag is set when timer counts from TACCR0 to zero
  *
  */
-
-
 #include <msp430g2553.h>
 #include <inttypes.h>
 #include "settings.h"
 #include "pwm.h"
+#include "main.h"
 
 #define PWM1 BIT5	// Pin definitions for pwm signals
 #define PWM2 BIT2
@@ -41,10 +40,10 @@
 /* TA_init
  * Initialize A timers 0 and 1 and define pins for pwm signals
  * Set timer roll over point and init values for pwm power compare points
- *
+ * INPUT: None
  */
-void TA_init(RunValues *rv, Settings *set) {
-	init_rv(rv, set);
+void TA_init(void) {
+
 	/*Set pwm out pins as timer outs*/
 	P2DIR |= PWM1 + PWM2;
 	P2SEL |= PWM1 + PWM2;
@@ -69,82 +68,68 @@ void TA_init(RunValues *rv, Settings *set) {
 }
 
 
-/* Init run values */
-void init_rv(RunValues *rv, Settings *set) {
+/* set_pwm_dc
+ * Sets duty cycle to pwm x
+ * INPUT: RunValues which to set to CCR registers
+ * RETURN: None
+ */
+void set_pwm_dc(RunValues *rv) {
+	TA1CCR1 = rv->pwm_dc_led;
+	TA1CCR2 = rv->pwm_dc_fan;
+}
+
+/* reset_run_values
+ * Resets all values to 0 except dir = 1
+ * Call after changing settings to reset cycle
+ * INPUT: RunValues to reset
+ */
+void reset_run_values(RunValues *rv) {
 	rv->inter_cycles = 0;
 	rv->pwm_dc_fan = 0;
 	rv->pwm_dc_led = 0;
-	rv->dir = 1;
 	rv->help_count = 0;
+	rv->dir = 1;
 }
 
-/* set_pwm_dc
- * Sets duty cycle to pwm x
- * INPUT: Duty cycle dc, set pwm choice ( 1 for led, 2 for fan, 3 for both)
- * RETURN: None
+/* pwm_cycle_isrf
+ * Place inside ISR in main using TIMER0_A0_VECTOR or other timer vector
+ * INPUT: RunValues and Settings for cycle and power control
  */
-void set_pwm_dc(RunValues *rv, int i) {
-	switch(i) {
-		case 1:
-
-			break;
-		case 2:
-
-			break;
-		case 3:
-			TA1CCR1 = rv->pwm_dc_led;
-			TA1CCR2 = rv->pwm_dc_fan;
-			break;
-		default:
-			TA1CCR1 = rv->pwm_dc_led;
-			TA1CCR2 = rv->pwm_dc_fan;
-			break;
-	}
-}
-
-
-void reset_run_values(RunValues *rv) {
-	rv->inter_cycles = 200;
-	rv->pwm_dc_fan = 0;
-	rv->pwm_dc_led = 0;
-	rv->help_count = 0;
-	rv->dir = 1;
-}
-
 
 void pwm_cycle_isrf(RunValues *rv, Settings *set) {
 	/* IF full cycle is done */
-	if(rv->inter_cycles == set->cycle_time_led) {
+	if(rv->inter_cycles == set->cycle_time) {
 		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
 		if(rv->dir == 1) {
-			rv->pwm_dc_led = 8000;
-			rv->pwm_dc_fan = 0;
-			//rv->pwm_dc_led = set->pwm_max_led;
-			set_pwm_dc(rv, 3);
+			rv->pwm_dc_led = set->pwm_max_led;
+			rv->pwm_dc_fan = set->pwm_max_fan;
+			set_pwm_dc(rv);						// Set max values on run values and change direction
 			rv->dir = -1;
 		} else {
 			rv->pwm_dc_led = 0;
-			rv->pwm_dc_fan = 8000;
-			set_pwm_dc(rv, 3);
+			rv->pwm_dc_fan = 0;					// Set run values to zero and change direction
+			set_pwm_dc(rv);
 			rv->dir = 1;
 		}
 		/* Reset counters */
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
 	/* Every second interrupt change pwm power by step toward dir*/
-	} /*else if(rv->help_count == 10) {
+	} else if(rv->help_count == 1) {
 
-		rv->pwm_dc_fan += -rv->dir * 160;
-		rv->pwm_dc_led += rv->dir * 160;
-		//rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;
-		//rv->pwm_dc_led += rv->dir * set->pwm_step_led;
-		set_pwm_dc(rv, 3);
+		rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;
+		rv->pwm_dc_led += rv->dir * set->pwm_step_led;
+		set_pwm_dc(rv);
 		rv->help_count = 0;
-	}*/
+		rv->inter_cycles++;
+	} else {
+		rv->help_count++;
+		rv->inter_cycles++;		// if no roll over count up
+	}
 
-	rv->help_count++;
-	rv->inter_cycles++;
+
 }
+
 
 
 
