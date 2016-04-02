@@ -51,7 +51,8 @@ void TA_init(RunValues *rv, Settings *set) {
 
 	/*Timer 0 cycle init*/
 	TA0CCR0 = TIMER0_MAX_COUNT;
-	TA0CTL |= TASSEL_2 + ID_3 + MC_1 + TAIE;  // SMCLK, div 8, Up Mode , interrupt enable
+	TA0CCTL0 |= CCIE;
+	TA0CTL |= TASSEL_2 + ID_3 + MC_1;  // SMCLK, div 8, Up Mode , interrupt enable
 
 
 	/*Timer 1 pwm init*/

@@ -110,7 +110,7 @@ void get_bt_data(void) {
 }
 
 /* INTERRUPT SERVICE ROUTINES 	*/
-#pragma vector = TIMER0_A1_VECTOR
+#pragma vector = TIMER0_A0_VECTOR
 __interrupt void TA0_ISR(void) {
 	if(rx_flag == 1) {
 		get_bt_data();

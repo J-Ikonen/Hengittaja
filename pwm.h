@@ -10,7 +10,7 @@
 
 #define TIMER1_MAX_COUNT 8000		// PWM frequency - DCO/TIMER_MAX_COUNT - 8Mhz/8000 = 1kHz
 #define TIMER0_MAX_COUNT 50000
-#define TIMER0_FRQ 1000000			// DCO / TIMER0_MAX_COUNT
+#define TIMER0_FRQ 1000000			// DCO / div
 
 /*	Values to use for cycling pwm power, used as current values
  *

@@ -43,9 +43,9 @@ void changeSettings(Settings *set, int i, int newval){ //Must be given the addre
 	}
 }
 void settingsDefault(Settings *set) {
-	set->cycle_time_led = 50000;
+	set->cycle_time_led = 500;
 	set->pwm_max_led = 8000;
-	set->cycle_time_fan = 50000;
+	set->cycle_time_fan = 500;
 	set->pwm_max_fan = 8000;
 	setHelpers(set);
 }
