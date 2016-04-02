@@ -12,6 +12,9 @@
  *When using your TI MSP-430 LaunchPad you will need to cross the TXD and RXD jumpers.
  *
  *
+ */
+
+/*
  *Small changes to original made to fit own purposes
  *
 */

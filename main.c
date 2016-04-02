@@ -21,11 +21,9 @@
 /* FUNCTION DECLARATIONS */
 void board_setup(void);
 void delay_cycles(volatile uint32_t i);
-int dir = 1; // breathing counter direction
 
 /* GLOBAL VARIABLES */
 char rx_string[INPUT_SIZE];
-volatile uint8_t intcyc = 0;
 RunValues rVal;
 Settings set;
 
@@ -38,16 +36,16 @@ int main(void) {
 
     board_setup();
     uart_init();
+
+    settingsDefault(&set);		// Set values used by timer before timer init
+    init_rv(&rv, &set);
     TA_init();
     __enable_interrupt();
 
     uart_puts((char *)"Hello world!\r\n");
 	
     // Init settings and run values
-    settingsDefault(&set);
-    rVal.inter_cycles = 0;
-    rVal.pwm_dc_led = 0;
-    rVal.pwm_dc_fan = 0;
+
 
 	
     while(1) {
@@ -101,7 +99,8 @@ void board_setup(void) {
 
 	P1OUT = 0;
 	P1DIR |= RLED + GLED;
-	P1SEL |= GLED;		// Set GLED as TA0.1
+
+
 
 
 }
@@ -112,29 +111,13 @@ void delay_cycles(volatile uint32_t i) {
 	while(i != 0);
 }
 
-/* INTERRUPT SERVICE ROUTINES */		// Should try to make based on non pwm timer
-#pragma vector = TIMER0_A1_VECTOR
+/* INTERRUPT SERVICE ROUTINES 		// Should try to make based on non pwm timer
+#pragma vector = TIMER1_A1_VECTOR
 __interrupt void TA0_ISR(void) {
-	if(rVal.inter_cycles == (uint32_t)(set.cycle_time_led)) {	// Count to cycle time. Scale for cycles at 1kHz
-		rVal.inter_cycles = 0;
-	}
-	/* Every 10 interrupts increase pwm by 10 and set new pwm dc value*/
-	if(intcyc == 10) {
-		if(rVal.pwm_dc_led >= 100) {
-			dir = -1;
-		} else if(rVal.pwm_dc_led <= 0) {
-			dir = 1;
-		}
-		rVal.pwm_dc_led += (dir * intcyc);
-		set_pwm_dc(&rVal, 1);
-		intcyc = 0;
 
-	}
-	intcyc++;
-	rVal.inter_cycles++;
 }
 
-
+*/
 
 
 

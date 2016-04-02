@@ -3,33 +3,30 @@
 #include <msp430g2553.h>
 #include "settings.h"
 #include "uart.h"
+#include "pwm.h"
 
-
-#define BSTARTADR				(int *) 0x1080
-#define MEM_LED_CYC				*(uint16_t *) 0x1080		// 2 Byte address for values up to 65s
-#define MEM_FAN_CYC				*(uint16_t *) 0x1082		// ^^
-#define MEM_LED_PWM				*(uint8_t *) 0x1084		// 1 Byte address for 0-100 PWM val (Might bug out!)
-#define MEM_FAN_PWM				*(uint8_t *) 0x1085		// ^^
 
 
 void changeSettings(Settings *set, int i, int newval){ //Must be given the address of settings i.e. &Settings1
 	switch (i){
 		case 1:
-			set->cycle_time_led = newval * 100;
+			set->cycle_time_led = scaleValues(newval, i);
+			setHelpers(set);
 			uart_puts((char *)"LED cycle time set\r\n");
 			break;
 		case 2:
-			set->cycle_time_fan = newval;
+			set->cycle_time_fan = scaleValues(newval, i);
+			setHelpers(set);
 			uart_puts((char *)"Fan cycle time set\r\n");
 			break;
 		case 3:
-			set->pwm_max_led = newval;
-			//set_pwm_dc(set->pwm_max_led, 1);
-
+			set->pwm_max_led = scaleValues(newval, i);
+			setHelpers(set);
 			uart_puts((char *)"LED max PWM value set\r\n");
 			break;
 		case 4:
-			set->pwm_max_fan = newval;
+			set->pwm_max_fan = scaleValues(newval, i);
+			setHelpers(set);
 			uart_puts((char *)"Fan max PWM value set\r\n");
 			break;
 		case 5:
@@ -38,6 +35,7 @@ void changeSettings(Settings *set, int i, int newval){ //Must be given the addre
 			break;
 		case 6:
 			mem2Settings(set);
+			setHelpers(set);
 			uart_puts((char *)"Fetced saved settings\r\n");
 			break;
 		default:
@@ -45,10 +43,10 @@ void changeSettings(Settings *set, int i, int newval){ //Must be given the addre
 	}
 }
 void settingsDefault(Settings *set) {
-	set->cycle_time_led = 50;
+	set->cycle_time_led = 200;
 	set->pwm_max_led = 100;
-	set->cycle_time_fan = 100;
-	set->pwm_max_fan = 50;
+	set->cycle_time_fan = 200;
+	set->pwm_max_fan = 100;
 }
 
 void settings2Mem(Settings *set) { //Must be given the address of settings i.e. &Settings1
@@ -82,6 +80,34 @@ void mem2Settings(Settings *set){
 	set->cycle_time_fan = MEM_FAN_CYC;
 	set->pwm_max_fan = MEM_FAN_PWM;
 }
+
+/* Calculate values used by timer 0 ISR */
+void setHelpers(Settings *set) {
+	set->inter_cycles_max_res = set->cycle_time_led / 2;
+	set->pwm_step_led = set->pwm_max_led / set->inter_cycles_max_res;
+	set->pwm_step_fan = set->pwm_max_fan / set->inter_cycles_max_res;
+}
+
+uint16_t scaleValues(uint16_t value, int i) {
+	switch(i)  {
+		case 1:
+			return (TIMER0_FRQ / TIMER0_MAX_COUNT) * value / 10;
+			break;
+		case 2:
+			return (TIMER0_FRQ / TIMER0_MAX_COUNT) * value / 10;
+			break;
+		case 3:
+			return value * TIMER1_MAX_COUNT / 100;
+			break;
+		case 4:
+			return value * TIMER1_MAX_COUNT / 100;
+			break;
+		default:
+			return value;
+			break;
+	}
+}
+
 
 
 

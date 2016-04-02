@@ -1,8 +1,6 @@
 /*
  * settings.h
  *
- *  Created on: 31.3.2016
- *      Author: Joonas
  */
 
 #ifndef SETTINGS_H_
@@ -12,17 +10,29 @@
 #include <msp430g2553.h>
 #include "settings.h"
 
-typedef struct run_values {
-	volatile uint16_t inter_cycles;
-	volatile uint8_t pwm_dc_led;
-	volatile uint8_t pwm_dc_fan;
-} RunValues;
+#define BSTARTADR				(int *) 0x1080
+#define MEM_LED_CYC				*(uint16_t *) 0x1080		// 2 Byte address for values up to 65s
+#define MEM_FAN_CYC				*(uint16_t *) 0x1082		// ^^
+#define MEM_LED_PWM				*(uint16_t *) 0x1084		// 2 Byte address for 0-100 PWM val (Might bug out!)
+#define MEM_FAN_PWM				*(uint16_t *) 0x1086		// ^^
 
+
+/* Values for pwm and cycling, save in values usable by code
+ * Used as maximum values
+ * user input value ranges
+ * cycle_time 	--- 1 = 0.1s 	(10-60000)
+ * pwm_max 		--- 1 = 1%		(0-100)
+ *
+ * uint16 max about 65000 with timer defaults in pwm.c allows for max cycle of about 54 minutes
+ */
 typedef struct settings {
-	uint16_t cycle_time_led;
-	uint16_t cycle_time_fan;
-	uint8_t pwm_max_led;
-	uint8_t pwm_max_fan;
+	volatile uint16_t cycle_time_led;
+	volatile uint16_t cycle_time_fan;
+	volatile uint16_t pwm_max_led;
+	volatile uint16_t pwm_max_fan;
+	volatile uint16_t inter_cycles_max_res;
+	volatile uint16_t pwm_step_led;
+	volatile uint16_t pwm_step_fan;
 
 } Settings;
 
@@ -34,5 +44,9 @@ void settings2Mem(Settings *set);
 void mem2Settings(Settings *set);
 
 void settingsDefault(Settings *set);
+
+void setHelpers(Settings *set);
+
+uint16_t scaleValues(uint16_t value, int i);
 
 #endif /* SETTINGS_H_ */
