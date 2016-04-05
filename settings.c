@@ -13,14 +13,14 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 		uart_puts((char *)"Neg arvoja ei hyvaksyta\r\n");
 	}
 	switch (i){
-		case 1:
+		case 1:			// CYCLE TIME
 			//if(newval > 600) {
 			//	uart_puts((char *)"Yli minuutti??? ok\r\n");
 			//}
 			set->cycle_time = scaleValues(newval, 1);
 			uart_puts((char *)"Syklin aika ok\r\n");
 			break;
-		case 2:
+		case 2:			// LED PWM MAX
 			if(newval * 80 < set->pwm_min_led) {
 				uart_puts((char *)"Virhe - LED max < min\r\n");
 			} else {
@@ -28,7 +28,7 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 				uart_puts((char *)"LED max arvo ok\r\n");
 			}
 			break;
-		case 3:
+		case 3:			// LED PWM MIN
 			if(newval * 80 > set->pwm_max_led) {
 				uart_puts((char *)"Virhe - LED max < min\r\n");
 			} else {
@@ -36,7 +36,7 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 				uart_puts((char *)"LED min arvo ok\r\n");
 			}
 			break;
-		case 4:
+		case 4:			// FAN PWM MAX
 			if(newval * 80 < set->pwm_min_fan) {
 				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
 			} else {
@@ -44,7 +44,7 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 				uart_puts((char *)"Tuuletin max arvo ok\r\n");
 			}
 			break;
-		case 5:
+		case 5:			// FAN PWM MIN
 			if(newval * 80 > set->pwm_max_fan) {
 				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
 			} else {
@@ -52,30 +52,46 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 				uart_puts((char *)"Tuuletin min arvo ok\r\n");
 			}
 			break;
-		case 6:
+		case 9:			// DEFAULT SETTINGS
 			settingsDefault(set);
 			uart_puts((char *)"Oletus asetukset asetettu\r\n");
 			break;
-		case 9:
+		case 10:		// SAVE SETTINGS
 			if(settings2Mem(set) == -1) {
 				uart_puts((char *)"Virhe asetusten tallennuksessa\r\n");
 			} else
 				uart_puts((char *)"Asetukset tallennettu\r\n");
 			break;
-		case 10:
+		case 11:		// LOAD SETTINGS
 			mem2Settings(set);
-			uart_puts((char *)"Asetukset otettu käyttöön\r\n");
+			uart_puts((char *)"Asetukset otettu kayttoon\r\n");
 			break;
 		default:
 			break;
 	}
 
-	if(i != 9) {
+	if(i != 10) {
 		setHelpers(set);
 		reset_run_values(rv); // Reset run values to restart cycle on changed settings
 	}
 
 }
+
+void printHelp(void) {
+	TA0CCTL0 |= CCIE;
+	uart_puts((char *)" Mahdolliset toiminnot:\n");
+	uart_puts((char *)" Lisaa '&' kaskyjen valiin jos samalla rivilla.\n");
+	uart_puts((char *)"'1:x' Syklin aika (0.1s)\n");
+	uart_puts((char *)"'2:x' Led max teho (%)\n");
+	uart_puts((char *)"'3:x' Led min teho (%)\n");
+	uart_puts((char *)"'4:x' Fan max teho (%)\n");
+	uart_puts((char *)"'5:x' Fan min teho (%)\n");
+	uart_puts((char *)"'9:'  Aseta oletus asetukset\n");
+	uart_puts((char *)"'10:' Tallenna asetukset\n");
+	uart_puts((char *)"'11:' Lataa asetukset\n");
+	TA0CCTL0 |= CCIE;
+}
+
 void settingsDefault(Settings *set) {
 	set->cycle_time = 100;
 	set->pwm_max_led = 8000;
@@ -100,7 +116,19 @@ int settings2Mem(Settings *set) { //Must be given the address of settings i.e. &
 	FCTL1 = FWKEY + WRT;			// Set write bit
 
 	/*Ready to write!*/
+	/* Write one setting and wait until ready again */
+	MEM_CYC = set->cycle_time;
+	while(FCTL3 & BUSY);
+	MEM_LED_MAX_PWM = set->pwm_max_led;
+	while(FCTL3 & BUSY);
+	MEM_LED_MIN_PWM = set->pwm_min_led;
+	while(FCTL3 & BUSY);
+	MEM_FAN_MAX_PWM = set->pwm_max_fan;
+	while(FCTL3 & BUSY);
+	MEM_FAN_MIN_PWM = set->pwm_min_fan;
+	while(FCTL3 & BUSY);
 
+		/* Simple check if everything was written */
 	if(MEM_CYC+MEM_LED_MAX_PWM+MEM_FAN_MAX_PWM+MEM_LED_MIN_PWM+MEM_FAN_MIN_PWM	 ==
 	set->cycle_time+set->pwm_max_led+set->pwm_max_fan+set->pwm_min_fan+set->pwm_min_led){
 		retVal = 0;

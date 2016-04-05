@@ -50,7 +50,7 @@ void TA_init(void) {
 
 	/*Timer 0 cycle init*/
 	TA0CCR0 = TIMER0_MAX_COUNT;
-	TA0CCTL0 |= CCIE;
+	TA0CCTL0 |= CCIE;			// Enable interrupt on CCR0
 	TA0CTL |= TASSEL_2 + ID_3 + MC_1;  // SMCLK, div 8, Up Mode , interrupt enable
 
 

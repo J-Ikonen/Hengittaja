@@ -51,7 +51,7 @@ int main(void) {
     TA_init();
     __enable_interrupt();
 
-    uart_puts((char *)"Hello world!\r\n");
+    printHelp();
 	
     // Init settings and run values
 
@@ -81,7 +81,7 @@ void delay_cycles(volatile uint32_t i) {
 void get_bt_data(void) {
 	char rx_string[INPUT_SIZE];
 	memset(rx_string, 0, INPUT_SIZE);
-	uart_gets(rx_string, INPUT_SIZE);		// se on ominaisuus ei bugi
+	uart_gets(rx_string, INPUT_SIZE);
 	/*We have the data!
 	Format should be the following: 1:120&2:100&3:80&5:00
 									^ ^
@@ -89,10 +89,14 @@ void get_bt_data(void) {
 									| Value: for cycletimes: 0-65 (0.1s) eg. 10s = 100
 									|		 for pwm: 0-99 (%) , when writing value doesnt do anything
 									|
-									What to do: 1: change led cycletime, 2: change fan cycletime
-									3: change led pwm brightness, 4: fan pwm power
-									5: write current settings to flash memory
-									6: get settings from memory (discard current settings)
+									What to do: 1: change cycletime, 2: change led pwm max
+									3: change led pwm min, 4: fan pwm max
+									5: fan pwm min
+									9: set default settings
+									10: write current settings to flash memory
+									11: get settings from memory (discard current settings)
+
+									where is enum keyword structure for commands...
 
 	Let's start parsing away!							*/
 
@@ -106,12 +110,20 @@ void get_bt_data(void) {
 		{
 			// Actually split the string in 2: replace ':' with 0
 			*separator = 0;
+
+
 			int memtask = atoi(command);
+			if(memtask == 0) {		// if not proper command print help
+				printHelp();
+				break;
+			}
 			++separator;
 			int val = atoi(separator);
 
 			changeSettings(&set, memtask, val, &rVal); // Call changeSettings to change settings or write them2flash
 
+		} else {
+			uart_puts((char *)"Kaskyn loputtava ':' merkkiin.\r\n");
 		}
 		// Find the next command in input string
 		command = strtok(0, "&");

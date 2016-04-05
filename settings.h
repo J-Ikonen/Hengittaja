@@ -36,6 +36,8 @@ typedef struct settings {
 
 void changeSettings(Settings *set, int i, int newval, RunValues *rv);
 
+void printHelp(void);
+
 int settings2Mem(Settings *set);
 
 void mem2Settings(Settings *set);
