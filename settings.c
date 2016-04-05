@@ -79,16 +79,20 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 
 void printHelp(void) {
 	TA0CCTL0 |= CCIE;
-	uart_puts((char *)" Mahdolliset toiminnot:\n");
-	uart_puts((char *)" Lisaa '&' kaskyjen valiin jos samalla rivilla.\n");
-	uart_puts((char *)"'1:x' Syklin aika (0.1s)\n");
-	uart_puts((char *)"'2:x' Led max teho (%)\n");
-	uart_puts((char *)"'3:x' Led min teho (%)\n");
-	uart_puts((char *)"'4:x' Fan max teho (%)\n");
+	uart_puts((char *)"Mahdolliset toiminnot:\r\n");
+	uart_puts((char *)"Lisaa '&' kaskyjen valiin jos samalla rivilla.\r\n");
+	__delay_cycles(10000000);
+	uart_puts((char *)"'1:x' Syklin aika (0.1s)\r\n");
+	uart_puts((char *)"'2:x' Led max teho (%)\r\n");
+	__delay_cycles(10000000);
+	uart_puts((char *)"'3:x' Led min teho (%)\r\n");
+	uart_puts((char *)"'4:x' Fan max teho (%)\r\n");
+	__delay_cycles(10000000);
 	uart_puts((char *)"'5:x' Fan min teho (%)\n");
 	uart_puts((char *)"'9:'  Aseta oletus asetukset\n");
+	__delay_cycles(10000000);
 	uart_puts((char *)"'10:' Tallenna asetukset\n");
-	uart_puts((char *)"'11:' Lataa asetukset\n");
+	uart_puts((char *)"'11:' Lataa asetukset\r\n");
 	TA0CCTL0 |= CCIE;
 }
 
