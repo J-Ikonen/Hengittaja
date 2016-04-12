@@ -22,6 +22,7 @@ typedef struct settings {
 	volatile uint16_t pwm_min_fan;
 	volatile uint16_t pwm_step_led;
 	volatile uint16_t pwm_step_fan;
+	volatile uint8_t fan_out_off;
 
 } Settings;
 

@@ -41,7 +41,7 @@ int main(void) {
     WDTCTL = WDTPW | WDTHOLD;			// Stop watchdog timer
 	BCSCTL1 = CALBC1_8MHZ; 				//Set DCO to 8Mhz
     DCOCTL = CALDCO_8MHZ; 				//Set DCO to 8Mhz
-
+    __delay_cycles(50000);				// Delay to let the clock set to cal value
 
 
     board_setup();
@@ -123,7 +123,7 @@ void get_bt_data(void) {
 			changeSettings(&set, memtask, val, &rVal); // Call changeSettings to change settings or write them2flash
 
 		} else {
-			uart_puts((char *)"Kaskyn loputtava ':' merkkiin.\r\n");
+			uart_puts((char *)"Kaskyn loputtava ':' merkkiin.\n");
 		}
 		// Find the next command in input string
 		command = strtok(0, "&");
@@ -137,7 +137,7 @@ __interrupt void TA0_ISR(void) {
 	if(rx_flag == 1) {
 		get_bt_data();
 	} else
-		pwm_cycle_isrf(&rVal, &set);
+		pwm_triangle_cycle_isrf(&rVal, &set);
 
 }
 

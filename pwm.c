@@ -51,7 +51,7 @@ void TA_init(void) {
 	/*Timer 0 cycle init*/
 	TA0CCR0 = TIMER0_MAX_COUNT;
 	TA0CCTL0 |= CCIE;			// Enable interrupt on CCR0
-	TA0CTL |= TASSEL_2 + ID_3 + MC_1;  // SMCLK, div 8, Up Mode , interrupt enable
+	TA0CTL |= TASSEL_2 + ID_1 + MC_1;  // SMCLK, div 2, Up Mode , interrupt enable
 
 
 	/*Timer 1 pwm init*/
@@ -59,7 +59,7 @@ void TA_init(void) {
 	TA1CCR1 = 0;
 	TA1CCR2 = 0;
 
-	TA1CTL |= TASSEL_2 + ID_0 + MC_1;  // SMCLK, div 0, Up Mode
+	TA1CTL |= TASSEL_2 + ID_0 + MC_1;  // SMCLK, div 1, Up Mode
 
 	TA1CCTL1 |= OUTMOD_7;		// Reset at TACCR1
 	TA1CCTL2 |= OUTMOD_7;		// Reset at TACCR2
@@ -91,12 +91,11 @@ void reset_run_values(RunValues *rv) {
 	rv->dir = 1;
 }
 
-/* pwm_cycle_isrf
+/* pwm_triangle_cycle_isrf
  * Place inside ISR in main using TIMER0_A0_VECTOR or other timer vector
  * INPUT: RunValues and Settings for cycle and power control
  */
-
-void pwm_cycle_isrf(RunValues *rv, Settings *set) {
+void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {
 	/* IF full cycle is done */
 	if(rv->inter_cycles >= set->cycle_time) {
 		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
@@ -115,24 +114,60 @@ void pwm_cycle_isrf(RunValues *rv, Settings *set) {
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
 	/* Every second interrupt change pwm power by step toward dir*/
-	} else if(rv->help_count >= 1) {
+	} else if(rv->help_count >= 10) {
 
-		rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;
-		rv->pwm_dc_led += rv->dir * set->pwm_step_led;
+		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
+			rv->pwm_dc_fan = 0;
+		} else if(set->fan_out_off == 1 && rv->dir == 1) {		// fan at max when breathing in
+			rv->pwm_dc_fan = set->pwm_max_fan;
+		} else {
+			rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;		// Should not happen
+		}
+
+		rv->pwm_dc_led += rv->dir * set->pwm_step_led;			// Leds at triangle wave
 		set_pwm_dc(rv);
 		rv->help_count = 0;
 		rv->inter_cycles++;
+
 	} else {
 		rv->help_count++;
 		rv->inter_cycles++;		// if no roll over count up
 	}
-
-
 }
 
+/* pwm_sin_cycle_isrf
+ *
+ *
+ */
+/*void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 
 
+}*/
 
+/* pwm_on_off_cycle_isrf
+ *
+ *
+ */
+void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
+	/* IF full cycle is done */
+	if(rv->inter_cycles >= set->cycle_time) {
+		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
+		if(rv->dir == 1) {
+			rv->pwm_dc_led = set->pwm_max_led;
+			rv->pwm_dc_fan = set->pwm_max_fan;
+			set_pwm_dc(rv);						// Set max values on run values and change direction
+			rv->dir = -1;
+		} else {
+			rv->pwm_dc_led = set->pwm_min_led;
+			rv->pwm_dc_fan = set->pwm_min_fan;					// Set run values to min and change direction
+			set_pwm_dc(rv);
+			rv->dir = 1;
+		}
+		/* Reset counters */
+		rv->inter_cycles = 0;
+		rv->help_count = 0;
+	}
+}
 
 
 

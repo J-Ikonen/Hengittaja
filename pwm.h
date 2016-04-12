@@ -8,9 +8,11 @@
 
 #include "main.h"
 
-#define TIMER1_MAX_COUNT 8000		// PWM frequency - DCO/TIMER_MAX_COUNT - 8Mhz/8000 = 1kHz
-#define TIMER0_MAX_COUNT 50000
-#define TIMER0_FRQ 1000000			// DCO / div
+#define TIMER1_MAX_COUNT 32000		// PWM frequency - DCO/TIMER_MAX_COUNT - 8Mhz/(4 * 8000) = 250Hz
+#define PWM_SCALE_VAL TIMER1_MAX_COUNT/100
+#define TIMER0_MAX_COUNT 40000
+#define TIMER0_FRQ 4000000			// DCO / div
+#define TIMER0_SCALE_VAL TIMER0_FRQ/TIMER0_MAX_COUNT/10		// interrupts/0.1s = 100
 
 /*	Values to use for cycling pwm power, used as current values
  *
@@ -38,7 +40,9 @@ void set_pwm_dc(RunValues *rv);
 
 void reset_run_values(RunValues *rv);
 
-void pwm_cycle_isrf(RunValues *rv,  Settings *set);
+void pwm_triangle_cycle_isrf(RunValues *rv,  Settings *set);
+
+void pwm_sin_cycle_isrf(RunValues *rv, Settings *set);
 
 uint16_t cycletime2counter(uint16_t value);
 
