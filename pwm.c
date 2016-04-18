@@ -196,7 +196,7 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 
 		if(rv->dir == -1) {
 			if(set->fan_out_off == 1) {
-				rv->pwm_dc_fan = 0;
+				rv->pwm_dc_fan = set->pwm_min_fan;
 			}
 			val_sin = get_sin2_appr(PI*0.5 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.5));
 

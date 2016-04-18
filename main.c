@@ -10,6 +10,7 @@
 
 /*
  * main.c
+ * Käyttöohje  v0.1
  *
  * Käyetetyt pinnit:
  * P1.1 == RX   ---> TX HC-06
