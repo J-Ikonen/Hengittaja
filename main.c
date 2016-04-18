@@ -28,7 +28,7 @@
 #define GLED	BIT6
 #define RX		BIT1
 #define TX		BIT2
-#define INPUT_SIZE 15
+#define INPUT_SIZE 30
 
 
 

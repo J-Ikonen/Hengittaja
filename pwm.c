@@ -192,7 +192,7 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 		/* Reset counters */
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
-	}else if(rv->help_count >= 10) {
+	}else if(rv->help_count >= 5) {
 
 		if(rv->dir == -1) {
 			if(set->fan_out_off == 1) {

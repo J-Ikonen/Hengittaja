@@ -18,54 +18,54 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 			//	uart_puts((char *)"Yli minuutti??? ok\r\n");
 			//}
 			set->cycle_time = scaleValues(newval, 1);
-			//uart_puts((char *)"Syklin aika ok\r\n");
+			uart_puts((char *)"Syklin aika ok\r\n");
 			break;
 		case 2:			// LED PWM MAX
 			if(newval * PWM_SCALE_VAL < set->pwm_min_led) {
 				uart_puts((char *)"Virhe - LED max < min\r\n");
 			} else {
 				set->pwm_max_led = scaleValues(newval, 2);
-				//uart_puts((char *)"LED max arvo ok\r\n");
+				uart_puts((char *)"LED max arvo ok\r\n");
 			}
 			break;
 		case 3:			// LED PWM MIN
 			if(newval * PWM_SCALE_VAL > set->pwm_max_led) {
-				//uart_puts((char *)"Virhe - LED max < min\r\n");
+				uart_puts((char *)"Virhe - LED max < min\r\n");
 			} else {
 				set->pwm_min_led = scaleValues(newval, 2);
-				//uart_puts((char *)"LED min arvo ok\r\n");
+				uart_puts((char *)"LED min arvo ok\r\n");
 			}
 			break;
 		case 4:			// FAN PWM MAX
 			if(newval * PWM_SCALE_VAL < set->pwm_min_fan) {
-				//uart_puts((char *)"Virhe - tuuletin max < min\r\n");
+				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
 			} else {
 				set->pwm_max_fan = scaleValues(newval, 2);
-				//uart_puts((char *)"Tuuletin max arvo ok\r\n");
+				uart_puts((char *)"Tuuletin max arvo ok\r\n");
 			}
 			break;
 		case 5:			// FAN PWM MIN
 			if(newval * PWM_SCALE_VAL > set->pwm_max_fan) {
-				//uart_puts((char *)"Virhe - tuuletin max < min\r\n");
+				uart_puts((char *)"Virhe - tuuletin max < min\r\n");
 			} else {
 				set->pwm_min_fan = scaleValues(newval, 2);
-				//uart_puts((char *)"Tuuletin min arvo ok\r\n");
+				uart_puts((char *)"Tuuletin min arvo ok\r\n");
 			}
 			break;
 		case 6:			// FAN OUT OFF
 			if(newval != 0 && newval != 1) {
-				//uart_puts((char *)"Virhe - valitse 0 tai 1 arvoksi\r\n");
+				uart_puts((char *)"Virhe - valitse 0 tai 1 arvoksi\r\n");
 			} else {
 				set->fan_out_off = newval;
-				//uart_puts((char *)"Tuuletin uloshengitys ok\r\n");
+				uart_puts((char *)"Tuuletin uloshengitys ok\r\n");
 			}
 			break;
 		case 7:			// CYCLE FORM
 			if(newval != 0 && newval != 1) {
-				//uart_puts((char *)"Virhe - valitse 0 tai 1 arvoksi\r\n");
+				uart_puts((char *)"Virhe - valitse 0 tai 1 arvoksi\r\n");
 			} else {
 				set->cycle_form = newval;
-				//uart_puts((char *)"Hengitysmuoto ok\r\n");
+				uart_puts((char *)"Hengitysmuoto ok\r\n");
 			}
 			break;
 		case 9:			// DEFAULT SETTINGS
