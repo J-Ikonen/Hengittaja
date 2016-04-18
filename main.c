@@ -28,7 +28,7 @@
 #define GLED	BIT6
 #define RX		BIT1
 #define TX		BIT2
-#define INPUT_SIZE 30
+#define INPUT_SIZE 15
 
 
 
@@ -137,7 +137,22 @@ __interrupt void TA0_ISR(void) {
 	if(rx_flag == 1) {
 		get_bt_data();
 	} else
-		pwm_triangle_cycle_isrf(&rVal, &set);
+		switch(set.cycle_form) {
+			case 1:
+				pwm_sin_cycle_isrf(&rVal, &set);
+				break;
+			case 2:
+#ifdef nodef
+				pwm_triangle_cycle_isrf(&rVal, &set);
+#endif
+				break;
+			case 3:
+
+				break;
+			default:
+				break;
+		}
+
 
 }
 

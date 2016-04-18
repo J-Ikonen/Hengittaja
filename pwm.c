@@ -28,14 +28,17 @@
  */
 #include <msp430g2553.h>
 #include <inttypes.h>
+#include <math.h>  // sin or pow eats all mem defined for .stack and .const
 #include "settings.h"
 #include "pwm.h"
 #include "main.h"
 
+
 #define PWM2 BIT5	// Pin definitions for pwm signals
 #define PWM1 BIT2
+#define PI 3.14159265
 
-
+volatile double val_sin = 0;
 
 /* TA_init
  * Initialize A timers 0 and 1 and define pins for pwm signals
@@ -95,7 +98,8 @@ void reset_run_values(RunValues *rv) {
  * Place inside ISR in main using TIMER0_A0_VECTOR or other timer vector
  * INPUT: RunValues and Settings for cycle and power control
  */
-void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {
+#ifdef nodef
+void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX VALUE WORKS COMBINE AND MAKE FUNCTION FOR SCALE VAL CALC
 	/* IF full cycle is done */
 	if(rv->inter_cycles >= set->cycle_time) {
 		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
@@ -117,11 +121,11 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {
 	} else if(rv->help_count >= 10) {
 
 		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
-			rv->pwm_dc_fan = 0;
+			rv->pwm_dc_fan = set->pwm_min_fan;
 		} else if(set->fan_out_off == 1 && rv->dir == 1) {		// fan at max when breathing in
 			rv->pwm_dc_fan = set->pwm_max_fan;
 		} else {
-			rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;		// Should not happen
+			rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;		// if fan set to follow leds
 		}
 
 		rv->pwm_dc_led += rv->dir * set->pwm_step_led;			// Leds at triangle wave
@@ -134,7 +138,7 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {
 		rv->inter_cycles++;		// if no roll over count up
 	}
 }
-
+#endif
 /* pwm_sin_cycle_isrf
  *
  *
@@ -143,6 +147,28 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {
 
 
 }*/
+
+double get_sin2_appr(double x) {
+	if(x < 0 && x > PI/2) {
+		x -= (x - PI/2);		// Mirror values after PI/2 because approximation at y(PI) != 0
+	}
+	return get_pow((0.9999966 * x - 0.16664824 * get_pow(x, 3) + 0.00830629 * get_pow(x, 2) - 0.00018363 * get_pow(x, 2)), 2);
+	//return get_pow(0.5, 2);
+}
+
+/* Calculate pow if i for x
+ * power must be integer
+ * INPUT: double x, integer i
+ * RETURN: double x^i
+ */
+double get_pow(double x, int i) {
+	double y = 1;
+	int n;
+	for(n = 0; n < i; n++) {
+		y *= x;
+	}
+	return y;
+}
 
 /* pwm_on_off_cycle_isrf
  *
@@ -166,6 +192,31 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 		/* Reset counters */
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
+	}else if(rv->help_count >= 10) {
+
+
+		val_sin = get_sin2_appr((rv->inter_cycles/set->cycle_time)*PI);
+
+		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
+			rv->pwm_dc_fan = 0;
+		} else if(set->fan_out_off == 1 && rv->dir == 1) {		// fan at max when breathing in
+			rv->pwm_dc_fan = set->pwm_max_fan;
+		} else {
+			rv->pwm_dc_fan = (uint16_t) (val_sin * (set->pwm_max_fan - set->pwm_min_fan) + set->pwm_min_fan);
+			// if fan set to follow leds
+		}
+
+
+		rv->pwm_dc_led = (uint16_t) (val_sin * (set->pwm_max_led - set->pwm_min_led) + set->pwm_min_led);
+		// Max led value scaled with sin^2 value
+
+		set_pwm_dc(rv);
+		rv->help_count = 0;
+		rv->inter_cycles++;
+
+	} else {
+		rv->help_count++;
+		rv->inter_cycles++;		// if no roll over count up
 	}
 }
 
