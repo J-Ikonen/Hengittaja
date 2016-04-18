@@ -48,9 +48,9 @@ void uart_init() {
 	P1SEL2 |= RXD + TXD;
 
 	UCA0CTL1 |= UCSSEL_2; 				// use SMCLK
-	UCA0BR0 = 52;                  		// 8MHz, OSC16, 9600, Set baud rate
+	UCA0BR0 = 104;                  		// 8MHz, OSC16, 9600, Set baud rate
 	UCA0BR1 = 0;                   	 	// ((8MHz/9600)/16) = 52.08333
-	UCA0MCTL = 0x10|UCOS16; 			// UCBRFx=1,UCBRSx=0, UCOS16=1
+	UCA0MCTL = 0x30|UCOS16; 			// UCBRFx=3,UCBRSx=0, UCOS16=1
 	UCA0CTL1 &= ~UCSWRST; 				// USCI state machine
 	IE2 |= UCA0RXIE;					// Enable interrupt
 

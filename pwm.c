@@ -98,7 +98,7 @@ void reset_run_values(RunValues *rv) {
  * Place inside ISR in main using TIMER0_A0_VECTOR or other timer vector
  * INPUT: RunValues and Settings for cycle and power control
  */
-#ifdef nodef
+
 void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX VALUE WORKS COMBINE AND MAKE FUNCTION FOR SCALE VAL CALC
 	/* IF full cycle is done */
 	if(rv->inter_cycles >= set->cycle_time) {
@@ -118,7 +118,7 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX 
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
 	/* Every second interrupt change pwm power by step toward dir*/
-	} else if(rv->help_count >= 10) {
+	} else if(rv->help_count >= INT_DELAY) {
 
 		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
 			rv->pwm_dc_fan = set->pwm_min_fan;
@@ -138,7 +138,7 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX 
 		rv->inter_cycles++;		// if no roll over count up
 	}
 }
-#endif
+
 /* pwm_sin_cycle_isrf
  *
  *
@@ -192,7 +192,7 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 		/* Reset counters */
 		rv->inter_cycles = 0;
 		rv->help_count = 0;
-	}else if(rv->help_count >= 5) {
+	} else if(rv->help_count >= INT_DELAY) {
 
 		if(rv->dir == -1) {
 			if(set->fan_out_off == 1) {

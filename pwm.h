@@ -8,11 +8,13 @@
 
 #include "main.h"
 
-#define TIMER1_MAX_COUNT 32000		// PWM frequency - DCO/TIMER_MAX_COUNT - 8Mhz/(4 * 8000) = 250Hz
-#define PWM_SCALE_VAL 320 //TIMER1_MAX_COUNT/100
+#define TIMER1_MAX_COUNT 16000		// PWM frequency - DCO/TIMER_MAX_COUNT - 8Mhz/(4 * 8000) = 250Hz, 16Mhz/(16000) = 1000 Hz
+#define PWM_SCALE_VAL 160 //TIMER1_MAX_COUNT/100
 #define TIMER0_MAX_COUNT 40000
 //#define TIMER0_FRQ 4000000			// DCO / div
-#define TIMER0_SCALE_VAL 10	// interrupts/0.1s = 100
+#define TIMER0_SCALE_VAL 20	// interrupts/0.1s = 100
+//		200 interrupt/s -> 20 interrupt/0.1s -> scale value == interrupt / 0.1s
+#define INT_DELAY 4
 
 /*	Values to use for cycling pwm power, used as current values
  *

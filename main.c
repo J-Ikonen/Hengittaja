@@ -39,8 +39,8 @@ Settings set;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;			// Stop watchdog timer
-	BCSCTL1 = CALBC1_8MHZ; 				//Set DCO to 8Mhz
-    DCOCTL = CALDCO_8MHZ; 				//Set DCO to 8Mhz
+    BCSCTL1 = CALBC1_16MHZ; 			//Set DCO to 8Mhz
+    DCOCTL = CALDCO_16MHZ; 				//Set DCO to 8Mhz
     __delay_cycles(50000);				// Delay to let the clock set to cal value
 
 
@@ -48,6 +48,7 @@ int main(void) {
     uart_init();
     reset_run_values(&rVal);
     settingsDefault(&set);		// Set values used by timer before timer init
+    							// CHANGE TO LOAD FROM MEMORY AND IF SHITTY MEMORY THEN DEFAULTS
     TA_init();
     __enable_interrupt();
 
@@ -142,9 +143,9 @@ __interrupt void TA0_ISR(void) {
 				pwm_sin_cycle_isrf(&rVal, &set);
 				break;
 			case 2:
-#ifdef nodef
+
 				pwm_triangle_cycle_isrf(&rVal, &set);
-#endif
+
 				break;
 			case 3:
 

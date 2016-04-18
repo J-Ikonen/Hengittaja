@@ -61,8 +61,8 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 			}
 			break;
 		case 7:			// CYCLE FORM
-			if(newval != 0 && newval != 1) {
-				uart_puts((char *)"Virhe - valitse 0 tai 1 arvoksi\r\n");
+			if(newval <= 0 || newval >= 3) {
+				uart_puts((char *)"Virhe - valitse arvo valilta 1-2 arvoksi\r\n");
 			} else {
 				set->cycle_form = newval;
 				uart_puts((char *)"Hengitysmuoto ok\r\n");
@@ -113,7 +113,7 @@ void printHelp(void) {
 	__delay_cycles(10000000);
 	uart_puts((char *)"'6:x' Fan ei paalla uloshengityksessa? (0 || 1)\n");
 	__delay_cycles(10000000);
-	uart_puts((char *)"'7:' Hengityksen muoto (0-1)\n");
+	uart_puts((char *)"'7:' Hengityksen muoto (1-2)\n");
 	uart_puts((char *)"'9:' Aseta oletus asetukset\n");
 	__delay_cycles(10000000);
 	uart_puts((char *)"'10:' Tallenna asetukset\n");
@@ -122,9 +122,9 @@ void printHelp(void) {
 }
 
 void settingsDefault(Settings *set) {
-	set->cycle_time = 800;
-	set->pwm_max_led = 32000;
-	set->pwm_max_fan = 32000;
+	set->cycle_time = 1600;
+	set->pwm_max_led = 16000;
+	set->pwm_max_fan = 16000;
 	set->pwm_min_led = 0;
 	set->pwm_min_fan = 0;
 	set->fan_out_off = 1;
@@ -201,8 +201,8 @@ void mem2Settings(Settings *set){
 
 /* Calculate values used by timer 0 ISR */
 void setHelpers(Settings *set) {
-	set->pwm_step_led = (set->pwm_max_led - set->pwm_min_led)/ (set->cycle_time / 10);
-	set->pwm_step_fan = (set->pwm_max_fan - set->pwm_min_fan)/ (set->cycle_time / 10);
+	set->pwm_step_led = (set->pwm_max_led - set->pwm_min_led)/ (set->cycle_time / INT_DELAY);
+	set->pwm_step_fan = (set->pwm_max_fan - set->pwm_min_fan)/ (set->cycle_time / INT_DELAY);
 	if(set->pwm_step_fan < 2 || set->pwm_step_led < 2) {
 		uart_puts((char *)"Arvot voivat aiheuttaa virheita tai epatarkkuuksia!!!\r\n");
 	}
