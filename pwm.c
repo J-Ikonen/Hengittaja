@@ -149,8 +149,8 @@ void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX 
 }*/
 
 double get_sin2_appr(double x) {
-	if(x < 0 && x > PI/2) {
-		x -= (x - PI/2);		// Mirror values after PI/2 because approximation at y(PI) != 0
+	if(x < 0 && x > PI*0.5) {
+		x -= (x - PI*0.5);		// Mirror values after PI/2 because approximation at y(PI) != 0
 	}
 	return get_pow((0.9999966 * x - 0.16664824 * get_pow(x, 3) + 0.00830629 * get_pow(x, 2) - 0.00018363 * get_pow(x, 2)), 2);
 	//return get_pow(0.5, 2);
@@ -194,16 +194,20 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 		rv->help_count = 0;
 	}else if(rv->help_count >= 10) {
 
+		if(rv->dir == -1) {
+			if(set->fan_out_off == 1) {
+				rv->pwm_dc_fan = 0;
+			}
+			val_sin = get_sin2_appr(PI*0.5 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.5));
 
-		val_sin = get_sin2_appr((rv->inter_cycles/set->cycle_time)*PI);
-
-		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
-			rv->pwm_dc_fan = 0;
-		} else if(set->fan_out_off == 1 && rv->dir == 1) {		// fan at max when breathing in
-			rv->pwm_dc_fan = set->pwm_max_fan;
-		} else {
+		} else if(rv->dir == 1) {
+			if(set->fan_out_off == 1) {
+				rv->pwm_dc_fan = set->pwm_max_fan;
+			}
+			val_sin = get_sin2_appr(((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.5);
+		}
+		if(set->fan_out_off == 0) {
 			rv->pwm_dc_fan = (uint16_t) (val_sin * (set->pwm_max_fan - set->pwm_min_fan) + set->pwm_min_fan);
-			// if fan set to follow leds
 		}
 
 
