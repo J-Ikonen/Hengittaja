@@ -48,7 +48,11 @@ int main(void) {
     board_setup();
     uart_init();
     reset_run_values(&rVal);
-    settingsDefault(&set);		// Set values used by timer before timer init
+
+    if(mem2Settings(&set) != 1) {
+    	 settingsDefault(&set);
+    }
+    							// Set values used by timer before timer init
     							// CHANGE TO LOAD FROM MEMORY AND IF SHITTY MEMORY THEN DEFAULTS
     TA_init();
     __enable_interrupt();

@@ -198,13 +198,14 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 			if(set->fan_out_off == 1) {
 				rv->pwm_dc_fan = set->pwm_min_fan;
 			}
-			val_sin = get_sin2_appr(PI*0.5 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.5));
+			val_sin = 1.0867 * get_sin2_appr(PI*0.5 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.45615));
+			// 1.0867 == siniamplitudin korjauskerroin                    == PI*0.5*0.9123 (sinix korjauskerroin)
 
 		} else if(rv->dir == 1) {
 			if(set->fan_out_off == 1) {
 				rv->pwm_dc_fan = set->pwm_max_fan;
 			}
-			val_sin = get_sin2_appr(((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.5);
+			val_sin = 1.0867 * get_sin2_appr(((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.45615);
 		}
 		if(set->fan_out_off == 0) {
 			rv->pwm_dc_fan = (uint16_t) (val_sin * (set->pwm_max_fan - set->pwm_min_fan) + set->pwm_min_fan);

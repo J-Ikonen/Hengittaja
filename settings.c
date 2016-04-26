@@ -79,8 +79,9 @@ void changeSettings(Settings *set, int i, int newval, RunValues *rv){ //Must be 
 				uart_puts((char *)"Asetukset tallennettu\r\n");
 			break;
 		case 11:		// LOAD SETTINGS
-			mem2Settings(set);
-			uart_puts((char *)"Asetukset otettu kayttoon\r\n");
+			if(mem2Settings(set) == 1) {
+				uart_puts((char *)"Asetukset otettu kayttoon\r\n");
+			}
 			break;
 		default:
 			break;
@@ -188,15 +189,26 @@ int settings2Mem(Settings *set) { //Must be given the address of settings i.e. &
 /* mem2Settings
  * Sets values from flash to Settings
  */
-void mem2Settings(Settings *set){
-	set->cycle_time = MEM_CYC;
-	set->pwm_max_led = MEM_LED_MAX_PWM;
-	set->pwm_max_fan = MEM_FAN_MAX_PWM;
-	set->pwm_min_led = MEM_LED_MIN_PWM;
-	set->pwm_min_fan = MEM_FAN_MIN_PWM;
-	set->fan_out_off = MEM_FAN_OUT_OFF;
-	set->cycle_form = MEM_CYCLE_FORM;
-	setHelpers(set);
+int mem2Settings(Settings *set){
+	if(MEM_CYC <= 0 || MEM_CYC > 20000 || MEM_LED_MAX_PWM < 0 || MEM_LED_MAX_PWM > TIMER1_MAX_COUNT
+			|| MEM_FAN_MAX_PWM < 0 || MEM_FAN_MAX_PWM > TIMER1_MAX_COUNT
+			|| MEM_LED_MIN_PWM < 0 || MEM_LED_MIN_PWM > TIMER1_MAX_COUNT
+			|| MEM_FAN_MIN_PWM < 0 || MEM_FAN_MIN_PWM > TIMER1_MAX_COUNT
+			|| MEM_FAN_OUT_OFF < 0 || MEM_FAN_OUT_OFF > 1) {
+		uart_puts((char *)"Virheelliset arvot muistissa. Ei otettu käyttöön\n");
+		return 0;
+	} else {
+		set->cycle_time = MEM_CYC;
+		set->pwm_max_led = MEM_LED_MAX_PWM;
+		set->pwm_max_fan = MEM_FAN_MAX_PWM;
+		set->pwm_min_led = MEM_LED_MIN_PWM;
+		set->pwm_min_fan = MEM_FAN_MIN_PWM;
+		set->fan_out_off = MEM_FAN_OUT_OFF;
+		set->cycle_form = MEM_CYCLE_FORM;
+		setHelpers(set);
+		return 1;
+	}
+
 }
 
 /* Calculate values used by timer 0 ISR */

@@ -42,7 +42,7 @@ void printHelp(void);
 
 int settings2Mem(Settings *set);
 
-void mem2Settings(Settings *set);
+int mem2Settings(Settings *set);
 
 void settingsDefault(Settings *set);
 
