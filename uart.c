@@ -24,7 +24,7 @@
 
 #define RXD		BIT1
 #define TXD		BIT2
-#define FIFO_SIZE 64  // Def 64
+#define FIFO_SIZE 128  // Def 64
 
 volatile unsigned char tx_char;				// This char is the most current char to go into the UART
 

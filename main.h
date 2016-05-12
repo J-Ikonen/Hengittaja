@@ -14,16 +14,15 @@
  *
  * uint16 max about 65000 with timer defaults in pwm.c allows for max cycle of about 54 minutes
  */
+
+
 typedef struct settings {
 	volatile uint16_t cycle_time;
 	volatile uint16_t pwm_max_led;
 	volatile uint16_t pwm_max_fan;
 	volatile uint16_t pwm_min_led;
 	volatile uint16_t pwm_min_fan;
-	volatile uint16_t pwm_step_led;
-	volatile uint16_t pwm_step_fan;
 	volatile uint8_t fan_out_off;
-	volatile uint8_t cycle_form;
 
 } Settings;
 
@@ -41,6 +40,7 @@ typedef struct run_values {
 void board_setup(void);
 void delay_cycles(volatile uint32_t i);
 void get_bt_data(void);
+void set_fill_flag(void);
 
 
 #endif /* MAIN_H_ */

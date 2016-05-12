@@ -12,9 +12,9 @@
 #define PWM_SCALE_VAL 160 //TIMER1_MAX_COUNT/100
 #define TIMER0_MAX_COUNT 40000
 //#define TIMER0_FRQ 4000000			// DCO / div
-#define TIMER0_SCALE_VAL 20	// interrupts/0.1s = 100
+#define TIMER0_SCALE_VAL 100	// interrupts/0.1s = 100
 //		200 interrupt/s -> 20 interrupt/0.1s -> scale value == interrupt / 0.1s
-#define INT_DELAY 4
+#define INT_DELAY 5  // Freq of change == 16Mhz/TIMER1_MAX_COUNT / INT_DELAY
 
 /*	Values to use for cycling pwm power, used as current values
  *

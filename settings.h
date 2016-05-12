@@ -14,8 +14,8 @@
 #define MEM_FAN_MAX_PWM			*(uint16_t *) 0x1084		// ^^
 #define MEM_LED_MIN_PWM			*(uint16_t *) 0x1086		// 2 Byte address for 0-100 PWM val (Might bug out!)
 #define MEM_FAN_MIN_PWM			*(uint16_t *) 0x1088
-#define MEM_FAN_OUT_OFF			*(uint8_t *)  0x108A
-#define MEM_CYCLE_FORM			*(uint8_t *)  0x108C
+//#define MEM_FAN_OUT_OFF			*(uint8_t *)  0x108a
+//#define MEM_CYCLE_FORM			*(uint8_t *)  0x108C
 
 /* Values for pwm and cycling, save in values usable by code
  * Used as maximum values
@@ -46,7 +46,7 @@ int mem2Settings(Settings *set);
 
 void settingsDefault(Settings *set);
 
-void setHelpers(Settings *set);
+//void setHelpers(Settings *set);
 
 uint16_t scaleValues(uint16_t value, int i);
 

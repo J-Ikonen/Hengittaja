@@ -52,9 +52,11 @@ void TA_init(void) {
 	P2SEL |= PWM1 + PWM2;
 
 	/*Timer 0 cycle init*/
+	/*
 	TA0CCR0 = TIMER0_MAX_COUNT;
 	TA0CCTL0 |= CCIE;			// Enable interrupt on CCR0
 	TA0CTL |= TASSEL_2 + ID_1 + MC_1;  // SMCLK, div 2, Up Mode , interrupt enable
+*/
 
 
 	/*Timer 1 pwm init*/
@@ -63,6 +65,8 @@ void TA_init(void) {
 	TA1CCR2 = 0;
 
 	TA1CTL |= TASSEL_2 + ID_0 + MC_1;  // SMCLK, div 1, Up Mode
+
+	TA1CCTL0 |= CCIE;	// INTERRUPT ON PWM CCR0
 
 	TA1CCTL1 |= OUTMOD_7;		// Reset at TACCR1
 	TA1CCTL2 |= OUTMOD_7;		// Reset at TACCR2
@@ -94,63 +98,11 @@ void reset_run_values(RunValues *rv) {
 	rv->dir = 1;
 }
 
-/* pwm_triangle_cycle_isrf
- * Place inside ISR in main using TIMER0_A0_VECTOR or other timer vector
- * INPUT: RunValues and Settings for cycle and power control
- */
 
-void pwm_triangle_cycle_isrf(RunValues *rv, Settings *set) {		// IF SCALING MAX VALUE WORKS COMBINE AND MAKE FUNCTION FOR SCALE VAL CALC
-	/* IF full cycle is done */
-	if(rv->inter_cycles >= set->cycle_time) {
-		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
-		if(rv->dir == 1) {
-			rv->pwm_dc_led = set->pwm_max_led;
-			rv->pwm_dc_fan = set->pwm_max_fan;
-			set_pwm_dc(rv);						// Set max values on run values and change direction
-			rv->dir = -1;
-		} else {
-			rv->pwm_dc_led = set->pwm_min_led;
-			rv->pwm_dc_fan = set->pwm_min_fan;					// Set run values to min and change direction
-			set_pwm_dc(rv);
-			rv->dir = 1;
-		}
-		/* Reset counters */
-		rv->inter_cycles = 0;
-		rv->help_count = 0;
-	/* Every second interrupt change pwm power by step toward dir*/
-	} else if(rv->help_count >= INT_DELAY) {
-
-		if(set->fan_out_off == 1 && rv->dir == -1) {	// Keep fan at 0 when breathing out
-			rv->pwm_dc_fan = set->pwm_min_fan;
-		} else if(set->fan_out_off == 1 && rv->dir == 1) {		// fan at max when breathing in
-			rv->pwm_dc_fan = set->pwm_max_fan;
-		} else {
-			rv->pwm_dc_fan += rv->dir * set->pwm_step_fan;		// if fan set to follow leds
-		}
-
-		rv->pwm_dc_led += rv->dir * set->pwm_step_led;			// Leds at triangle wave
-		set_pwm_dc(rv);
-		rv->help_count = 0;
-		rv->inter_cycles++;
-
-	} else {
-		rv->help_count++;
-		rv->inter_cycles++;		// if no roll over count up
-	}
-}
-
-/* pwm_sin_cycle_isrf
- *
- *
- */
-/*void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
-
-
-}*/
 
 double get_sin2_appr(double x) {
 	if(x < 0 && x > PI*0.5) {
-		x -= (x - PI*0.5);		// Mirror values after PI/2 because approximation at y(PI) != 0
+		x -= (x - PI*0.5);		// Mirroring done before this func so this if is USELESS PROBABLY
 	}
 	return get_pow((0.9999966 * x - 0.16664824 * get_pow(x, 3) + 0.00830629 * get_pow(x, 2) - 0.00018363 * get_pow(x, 2)), 2);
 	//return get_pow(0.5, 2);
@@ -179,13 +131,13 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 	if(rv->inter_cycles >= set->cycle_time) {
 		/* Change direction when interrupt counter at cycle time and set max or min as pwm power*/
 		if(rv->dir == 1) {
-			rv->pwm_dc_led = set->pwm_max_led;
-			rv->pwm_dc_fan = set->pwm_max_fan;
+			//rv->pwm_dc_led = set->pwm_max_led;
+			//rv->pwm_dc_fan = set->pwm_max_fan;
 			set_pwm_dc(rv);						// Set max values on run values and change direction
 			rv->dir = -1;
 		} else {
-			rv->pwm_dc_led = set->pwm_min_led;
-			rv->pwm_dc_fan = set->pwm_min_fan;					// Set run values to min and change direction
+			//rv->pwm_dc_led = set->pwm_min_led;
+			//rv->pwm_dc_fan = set->pwm_min_fan;					// Set run values to min and change direction
 			set_pwm_dc(rv);
 			rv->dir = 1;
 		}
@@ -195,21 +147,21 @@ void pwm_sin_cycle_isrf(RunValues *rv, Settings *set) {
 	} else if(rv->help_count >= INT_DELAY) {
 
 		if(rv->dir == -1) {
-			if(set->fan_out_off == 1) {
-				rv->pwm_dc_fan = set->pwm_min_fan;
-			}
-			val_sin = 1.0867 * get_sin2_appr(PI*0.5 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.45615));
+
+			rv->pwm_dc_fan = set->pwm_min_fan;
+
+			val_sin = 1.0867 * get_sin2_appr(PI*0.45615 - (((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.45615));
 			// 1.0867 == siniamplitudin korjauskerroin                    == PI*0.5*0.9123 (sinix korjauskerroin)
 
 		} else if(rv->dir == 1) {
-			if(set->fan_out_off == 1) {
-				rv->pwm_dc_fan = set->pwm_max_fan;
-			}
+
+			rv->pwm_dc_fan = set->pwm_max_fan;
+
 			val_sin = 1.0867 * get_sin2_appr(((float)rv->inter_cycles/(float)set->cycle_time)*PI*0.45615);
-		}
+		}/*
 		if(set->fan_out_off == 0) {
 			rv->pwm_dc_fan = (uint16_t) (val_sin * (set->pwm_max_fan - set->pwm_min_fan) + set->pwm_min_fan);
-		}
+		}*/
 
 
 		rv->pwm_dc_led = (uint16_t) (val_sin * (set->pwm_max_led - set->pwm_min_led) + set->pwm_min_led);

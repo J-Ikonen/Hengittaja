@@ -10,18 +10,18 @@
 
 /*
  * main.c
- * Käyttöohje  v0.1
+ * Kï¿½yttï¿½ohje  v0.2
  *
- * Käyetetyt pinnit:
+ * Kï¿½yetetyt pinnit:
  * P1.1 == RX   ---> TX HC-06
  * P1.2 == TX   ---> RX HC-06
  * P2.2 == PWM1 ---> LED
  * P2.5 == PWM2 ---> FAN
  *
  *
- * Korkein aika jolla pwm teho vielä vaihtuu saadaan yhtälöllä
+ * Korkein aika jolla pwm teho vielï¿½ vaihtuu saadaan yhtï¿½lï¿½llï¿½
  * (max - min) * 80 / 10 = MaxAika,
- * missä max ja min (%), MaxAika (s)
+ * missï¿½ max ja min (%), MaxAika (s)
  */
  
 /* Readable pin defines and other constants */
@@ -29,14 +29,17 @@
 #define GLED	BIT6
 #define RX		BIT1
 #define TX		BIT2
-#define INPUT_SIZE 30
-
+#define INPUT_SIZE 64
+#define FILL_MAX_COUNT 20000
 
 
 /* GLOBAL VARIABLES */
 
 RunValues rVal;
 Settings set;
+
+volatile uint8_t fill_flag = 0;
+volatile uint16_t fill_counter = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;			// Stop watchdog timer
@@ -51,7 +54,8 @@ int main(void) {
 
     if(mem2Settings(&set) != 1) {
     	 settingsDefault(&set);
-    }
+    } /*else
+    	set.pwm_max_fan = 16000;*/
     							// Set values used by timer before timer init
     							// CHANGE TO LOAD FROM MEMORY AND IF SHITTY MEMORY THEN DEFAULTS
     TA_init();
@@ -65,7 +69,10 @@ int main(void) {
 	
     while(1) {
     	if(rx_flag == 1) {
+    	    TA1CCTL0 &= ~CCIE;
 			get_bt_data();
+			TA1CCTL0 |= CCIE;
+			reset_run_values(&set);
 		}
     }
 	
@@ -137,29 +144,32 @@ void get_bt_data(void) {
 
 }
 
+void set_fill_flag() {
+	if(fill_flag == 1) {
+		fill_flag = 0;
+	} else
+		fill_flag = 1;
+}
+
 /* INTERRUPT SERVICE ROUTINES 	*/
-#pragma vector = TIMER0_A0_VECTOR
+#pragma vector = TIMER1_A0_VECTOR
 __interrupt void TA0_ISR(void) {
 	if(rx_flag == 1) {
-		get_bt_data();
+		//get_bt_data();
+	} else if(fill_flag == 1) {
+	    /*if(fill_counter == 0) {*/
+	        TA1CCR2 = TIMER1_MAX_COUNT;
+	    //}
+	    /*
+        if(fill_counter++ == FILL_MAX_COUNT) {
+            fill_counter = 0;
+            fill_flag = 0;
+            reset_run_values(&rVal);
+        }
+        */
+        	    
 	} else
-		switch(set.cycle_form) {
-			case 1:
-				pwm_sin_cycle_isrf(&rVal, &set);
-				break;
-			case 2:
-
-				pwm_triangle_cycle_isrf(&rVal, &set);
-
-				break;
-			case 3:
-
-				break;
-			default:
-				break;
-		}
-
-
+		pwm_sin_cycle_isrf(&rVal, &set);
 }
 
 
